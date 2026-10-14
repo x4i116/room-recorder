@@ -1,4 +1,4 @@
-# Room Recorder
+# <img src="icon.png" width="48" align="top" alt=""> Room Recorder
 
 Turn any PC microphone into a room audio recorder. Record 24/7 or only when something happens, with noise reduction that strips out hard drive hum, fans and HVAC so you can run the mic gain high. Every clip gets a waveform + spectrogram image so you can scan a day's activity at a glance.
 
@@ -16,6 +16,7 @@ Turn any PC microphone into a room audio recorder. Record 24/7 or only when some
 - **Storage cap** - oldest recordings are deleted automatically when the folder hits your limit
 - **Volume boost** with a soft limiter, and a 100 Hz rumble filter
 - **Windows menu** (`run.bat`) - no command line needed, settings are remembered, optional start-with-Windows
+- **Taskbar shortcut** with its own icon, created from the menu in one step
 - Keeps the PC awake while recording (the screen can still turn off)
 
 ## Quick start (Windows)
@@ -25,6 +26,7 @@ Turn any PC microphone into a room audio recorder. Record 24/7 or only when some
 3. Make sure **Settings → Privacy & security → Microphone → Let desktop apps access your microphone** is on.
 4. Double-click **`run.bat`**. The first run installs the required libraries automatically.
 5. Pick **[1] Start recording**. Stay quiet for the first 3 seconds while it learns the room.
+6. *(Optional)* Pick **[8] Create desktop shortcut**, then right-click the new **Room Recorder** shortcut on your desktop → **Pin to taskbar** (on Windows 11 it may be under **Show more options**). You can delete the desktop shortcut after pinning.
 
 Recordings are saved to `recordings\YYYY-MM-DD\HH-MM-SS_voice.flac` (plus a matching `.jpg`).
 Press **Ctrl+C** to stop; if Windows asks *"Terminate batch job (Y/N)?"*, press **N** to return to the menu.
@@ -40,6 +42,7 @@ Press **Ctrl+C** to stop; if Windows asks *"Terminate batch job (Y/N)?"*, press 
 | 5 | Open recordings folder |
 | 6 | Make spectrogram images for older recordings |
 | 7 | Install / repair required libraries |
+| 8 | Create desktop shortcut (to pin to taskbar) |
 
 | Settings | |
 |---|---|
@@ -56,6 +59,29 @@ Press **Ctrl+C** to stop; if Windows asks *"Terminate batch job (Y/N)?"*, press 
 | B | Volume boost (dB) |
 
 Settings are stored in `settings.ini` next to `run.bat`.
+
+### Pinning to the taskbar
+
+Windows won't pin a `.bat` file directly, so menu option **[8]** makes a shortcut that runs `run.bat` through Command Prompt, using `RoomRecorder.ico` as its icon. Right-click it → **Pin to taskbar**.
+
+<details>
+<summary>Making the shortcut by hand</summary>
+
+1. Right-click the desktop → **New → Shortcut**.
+2. Enter `cmd.exe /c "C:\RoomRecorder\run.bat"` (use your folder's path) and name it **Room Recorder**.
+3. Right-click the shortcut → **Properties**. Set **Start in** to your folder, click **Change Icon… → Browse**, and pick `RoomRecorder.ico`.
+4. Right-click the shortcut → **Pin to taskbar**.
+
+If you change the icon on a shortcut that's already pinned, unpin and re-pin it - Windows caches pinned icons.
+</details>
+
+### Moving the folder
+
+The whole folder is portable - cut and paste it anywhere, including another drive. Settings travel with it, and so do recordings if the recordings folder is left at its default.
+
+- **Start with Windows** updates itself to the new location the next time you open `run.bat`.
+- **A pinned taskbar shortcut** still points to the old location. Unpin it, run menu option **[8]** again, and re-pin.
+- If you set a full path for the recordings folder (e.g. `D:\Recordings`), new recordings keep going there.
 
 ## Command line (Windows, macOS, Linux)
 
@@ -128,6 +154,7 @@ When the cap is reached the oldest files are deleted, so you always keep the mos
 - **Recordings are silent** - Windows microphone privacy setting is off, or the wrong device is selected (Settings → 1).
 - **Too many false triggers** - lower sensitivity, raise noise reduction, or move the mic away from the PC.
 - **Missing quiet sounds** - raise sensitivity to High, or increase the mic gain in Windows sound settings.
+- **Taskbar icon didn't change** - unpin the shortcut and pin it again.
 - **`python` opens the Microsoft Store** - reinstall Python with "Add python.exe to PATH" checked. `run.bat` also tries the `py` launcher.
 
 ## A note on recording laws

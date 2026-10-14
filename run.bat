@@ -1,6 +1,8 @@
 @echo off
 setlocal EnableExtensions
 cd /d "%~dp0"
+set "SELF=%~f0"
+set "SELF_DIR=%~dp0"
 title Room Recorder
 
 set "STARTUP_FILE=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Room Recorder.bat"
@@ -42,6 +44,8 @@ rem ---------- first-run library check ----------
 if errorlevel 1 goto install_first
 
 :after_check
+rem keep auto-start pointing here, even if this folder was moved
+if exist "%STARTUP_FILE%" call :write_startup
 if /i "%~1"=="/auto" goto start
 
 rem =====================================================================
@@ -65,6 +69,7 @@ echo     [4] Sound level meter
 echo     [5] Open recordings folder
 echo     [6] Make spectrogram images for older recordings
 echo     [7] Install / repair required libraries
+echo     [8] Create desktop shortcut (to pin to taskbar)
 echo     [0] Exit
 echo  ===================================================
 set "CH="
@@ -76,6 +81,7 @@ if "%CH%"=="4" goto meter
 if "%CH%"=="5" goto open_folder
 if "%CH%"=="6" goto make_spectro
 if "%CH%"=="7" goto install
+if "%CH%"=="8" goto make_shortcut
 if "%CH%"=="0" exit /b 0
 goto menu
 
@@ -123,6 +129,26 @@ cls
 echo  Drawing a waveform + spectrogram .jpg for any recording that doesn't have one yet...
 echo.
 %PY% room_recorder.py --make-spectrograms --out "%OUTDIR%"
+echo.
+pause
+goto menu
+
+:make_shortcut
+cls
+set "RR_BAT=%SELF%"
+set "RR_DIR=%SELF_DIR%"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$w=New-Object -ComObject WScript.Shell; $s=$w.CreateShortcut([Environment]::GetFolderPath('Desktop')+'\Room Recorder.lnk'); $s.TargetPath=$env:ComSpec; $s.Arguments='/c '+[char]34+$env:RR_BAT+[char]34; $s.WorkingDirectory=$env:RR_DIR; if (Test-Path ($env:RR_DIR+'RoomRecorder.ico')) { $s.IconLocation=$env:RR_DIR+'RoomRecorder.ico,0' }; $s.Save()"
+if errorlevel 1 (
+    echo.
+    echo  Couldn't create the shortcut. See the README for how to make one by hand.
+) else (
+    echo.
+    echo  "Room Recorder" shortcut added to your desktop.
+    echo.
+    echo  To pin it: right-click the shortcut and choose "Pin to taskbar"
+    echo  ^(on Windows 11 it may be under "Show more options"^).
+    echo  After pinning you can delete the desktop shortcut.
+)
 echo.
 pause
 goto menu
@@ -293,8 +319,7 @@ goto saved
 
 :toggle_startup
 if exist "%STARTUP_FILE%" (del "%STARTUP_FILE%" & goto settings)
-> "%STARTUP_FILE%" echo @echo off
->> "%STARTUP_FILE%" echo start "Room Recorder" /min "%~f0" /auto
+call :write_startup
 echo.
 echo  Room Recorder will now start minimized in its current mode when you log in.
 pause
@@ -373,4 +398,9 @@ exit /b
 :migrate
 if "%MARGIN%"=="8" (set "MARGIN=5") else if "%MARGIN%"=="12" (set "MARGIN=8") else if "%MARGIN%"=="18" (set "MARGIN=12")
 call :save
+exit /b
+
+:write_startup
+> "%STARTUP_FILE%" echo @echo off
+>> "%STARTUP_FILE%" echo start "Room Recorder" /min "%SELF%" /auto
 exit /b
